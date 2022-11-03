@@ -26,9 +26,77 @@
  * There are multiple ways to do this, but you may want to use regular expressions.
  * Please go through this lesson: https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/regular-expressions/
  */
-function parseStory(rawStory) {
+ function parseStory(rawStory) {
   // Your code here.
-  return {}; // This line is currently wrong :)
+  // Step 1: Finding words and their thing
+  // Each word ending is with ], so split the text according to ]
+  
+  // console.log("this is the raw story",rawStory)
+  
+  let sections = []
+  sections = rawStory.split(' ');
+
+  // console.log('this is the sections array',sections)
+
+  let processedSections = [];
+  // Now words need to be cleaned
+  sections.forEach((item, index) => {
+    // Splitting word from its thing
+    let word = null;
+    let pos = null;
+
+    if (item.includes('[n]')) {
+      pos = 'noun'
+      word = item.replace('[n]','')
+    }
+    else if (item.includes('[v]')) {
+      pos = 'verb'
+      word = item.replace('[v]','')
+    }
+    else if (item.includes('[a]')) {
+      pos = 'adjective'
+      word = item.replace('[a]','')
+    }
+    else
+      word = item.replace(/[^a-zA-Z0-9-,.]+/g, " ")
+
+
+    if (pos === null) {
+      processedSections.push({ word: word })
+    }
+    else {
+      processedSections.push({ word : word, pos: pos })
+    }
+
+  })
+  console.log("this is the clean array",processedSections);
+
+  processedSections.forEach((item, index) => {
+    // making an input for each pos and giving id 
+   
+    if (item.pos) {
+      const input = document.createElement('input');
+      input.setAttribute('id', `p-${index}`)
+      input.setAttribute("maxlength","20")
+      input.placeholder = item.pos;
+      // input.style.margin = "1px 4px 1px 4px";
+      // input.style.width = "20%";
+      document.getElementById('madLibsEdit').appendChild(input);
+    }
+    else {
+      const span = document.createElement("span");
+      span.innerHTML = ` ${item.word} ` ;
+      document.getElementById('madLibsEdit').appendChild(span);
+    }
+
+
+
+  })
+
+
+  return {
+  ...processedSections
+  }; // This line is currently wrong :) => It's not wrong anymore :)
 }
 
 /**
@@ -45,5 +113,51 @@ function parseStory(rawStory) {
 getRawStory()
   .then(parseStory)
   .then((processedStory) => {
-    console.log(processedStory);
+    // Link word to input element and make the value
+    // inside the object listen to change
+    //  console.log(processedStory)
+
+    Object.values(processedStory).forEach((item, index) => {
+      const p = document.createElement('span');
+
+       if (item.pos) {
+          const input = document.getElementById(`p-${index}`);
+          p.textContent = `[${item.pos}] `;
+          // p.style.color="red"; 
+          
+          input.addEventListener('input', () => {
+            if (input.value.length > 0){
+              p.innerHTML = `${input.value} `;
+              p.style.color="blue";
+            }
+            else{
+              p.innerHTML = `${item.word}[${item.pos}] `;
+              // p.style.color="red";
+
+            }
+          })
+        }
+        else {
+            p.insertAdjacentHTML("beforeend", `${item.word } `)
+        }
+
+      document.getElementById('madLibsPreview').appendChild(p);
+    })
+
   });
+  
+  const title = document.querySelector('.subheader');
+  title.innerHTML = title.textContent.replace(/\S/g,"<span>$&</span>");
+
+  const letters = document.querySelectorAll('span');
+
+  for(let i=0; i < letters.length; i++){
+      letters[i].addEventListener("mouseover", function(){
+          letters[i].classList.add('active');
+          setTimeout(()=>{
+            letters[i].classList.remove('active');
+          },2000)
+
+      });
+  }
+
